@@ -1,15 +1,16 @@
-// Licensed under the Dartastic Pro Software License Agreement.
+// Licensed under the Apache License, Version 2.0
 // Copyright 2025-2026 Mindful Software LLC d/b/a Dartastic.io, All rights reserved.
 
-import 'package:dartastic_opentelemetry/dartastic_opentelemetry.dart';
+import 'package:dartastic_opentelemetry_api/dartastic_opentelemetry_api.dart';
 
 import 'otel_glean_suppression.dart';
 
 const _tracerName = 'dartastic_otel_libs_glean';
 
-Tracer _tracer() => OTel.tracerProvider().getTracer(_tracerName);
+APITracer _tracer() => OTelAPI.tracerProvider().getTracer(_tracerName);
 
 class GleanResult {
+  /// Creates a result.
   const GleanResult({
     this.tenant,
     this.actAsUser,
@@ -69,8 +70,13 @@ class GleanResult {
   final int? statusCode;
 }
 
+/// What a traced call returned: the value for the caller plus fields
+/// recorded on the span.
 class GleanCallResult<T> {
+  /// Creates a call result.
   const GleanCallResult({required this.value, this.result});
+
+  /// The value returned to the caller.
   final T value;
   final GleanResult? result;
 }
@@ -95,95 +101,95 @@ Future<T> tracedGlean<T>({
   final span = _tracer().startSpan(
     'glean $operation',
     kind: SpanKind.client,
-    attributes: OTel.attributesFromMap(m),
+    attributes: OTelAPI.attributesFromMap(m),
   );
   try {
     final r = await invoke();
     if (r.result != null) {
       final extras = <Attribute<Object>>[];
       if (r.result!.tenant != null) {
-        extras.add(OTel.attributeString('glean.tenant', r.result!.tenant!));
+        extras.add(OTelAPI.attributeString('glean.tenant', r.result!.tenant!));
       }
       if (r.result!.actAsUser != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'glean.act_as.user',
           r.result!.actAsUser!,
         ));
       }
       if (r.result!.applicationId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'glean.application.id',
           r.result!.applicationId!,
         ));
       }
       if (r.result!.conversationId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'glean.conversation.id',
           r.result!.conversationId!,
         ));
       }
       if (r.result!.messageId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'glean.message.id',
           r.result!.messageId!,
         ));
       }
       if (r.result!.requestType != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'glean.request.type',
           r.result!.requestType!,
         ));
       }
       if (r.result!.datasourcesSearched != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'glean.datasources.searched',
           r.result!.datasourcesSearched!,
         ));
       }
       if (r.result!.totalResults != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'glean.total.results',
           r.result!.totalResults!,
         ));
       }
       if (r.result!.citationsReturned != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'glean.citations.returned',
           r.result!.citationsReturned!,
         ));
       }
       if (r.result!.modelName != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'glean.model.name',
           r.result!.modelName!,
         ));
       }
       if (r.result!.inputTokens != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'glean.tokens.input',
           r.result!.inputTokens!,
         ));
       }
       if (r.result!.outputTokens != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'glean.tokens.output',
           r.result!.outputTokens!,
         ));
       }
       if (r.result!.totalTokens != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'glean.tokens.total',
           r.result!.totalTokens!,
         ));
       }
       if (r.result!.durationMs != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'glean.duration_ms',
           r.result!.durationMs!,
         ));
       }
       if (r.result!.statusCode != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'http.response.status_code',
           r.result!.statusCode!,
         ));
@@ -194,13 +200,13 @@ Future<T> tracedGlean<T>({
           );
         }
       }
-      if (extras.isNotEmpty) span.addAttributes(OTel.attributes(extras));
+      if (extras.isNotEmpty) span.addAttributes(OTelAPI.attributes(extras));
     }
     return r.value;
   } catch (e, st) {
-    span.addAttributes(OTel.attributes([
-      OTel.attributeString(
-        ErrorResource.errorType.key,
+    span.addAttributes(OTelAPI.attributes([
+      OTelAPI.attributeString(
+        ErrorAttributes.errorType.key,
         e.runtimeType.toString(),
       ),
     ]));
